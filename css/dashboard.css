@@ -1,0 +1,261 @@
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+}
+
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: #333;
+    padding-top: 30px;
+    transition: width 0.3s;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-size: 1.2em;
+    color: #fff;
+}
+
+.sidebar-menu {
+    padding: 20px;
+    list-style: none;
+}
+
+.sidebar-menu li {
+    margin-bottom: 20px;
+}
+
+.sidebar-menu a {
+    color: #bbb;
+    text-decoration: none;
+    display: block;
+    font-size: 1.1em;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.sidebar-menu a:hover, .sidebar-menu a.active {
+    background: #575fcf;
+    color: #fff;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+header {
+    background: #fff;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-wrapper img {
+    border-radius: 50%;
+}
+
+.content {
+    margin-top: 20px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table-container {
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+img {
+    max-width: 100px;
+    height: auto;
+}
+
+.form-container {
+    margin-top: 20px;
+    display: none;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-container input, .form-container textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.form-container button {
+    background: #333;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.form-container button:hover {
+    background: #575fcf;
+}
+
+.nform{
+    display: grid;
+    background-color: #bbb;
+}
+
+.latest-reviews {
+    margin-top: 20px;
+}
+
+.latest-reviews h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.review {
+    background: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.review h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.review p {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.review small {
+    font-size: 14px;
+    color: #777;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+    .main-content {
+        margin-left: 200px;
+    }
+}
+@media (max-width: 576px) {
+    .sidebar {
+        width: 150px;
+    }
+    .main-content {
+        margin-left: 150px;
+    }
+}
+
+button {
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button[type="submit"] {
+    background-color: #008CBA;
+}
+
+button[type="submit"]:hover {
+    background-color: #0077A3;
+}
+
+form button {
+    background-color: #f44336;
+}
+
+form button:hover {
+    background-color: #e53935;
+}
+
+form button {
+    background-color: #f44336;
+}
+
+form button:hover {
+    background-color: #e53935;
+}
+
+#reviewForm button {
+    background-color: #9C27B0;
+   
+}
+
+#reviewForm button:hover {
+    background-color: #8E24AA;
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+    
+    color: white;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.sidebar-menu li:last-child a {
+    background-color: #f44336;
+}
+
+.sidebar-menu li:last-child a:hover {
+    background-color: #e53935;
+}
+
+#packages button {
+    background-color: #FFC107;
+}
+
+#packages button:hover {
+    background-color: #FFB300;
+}
