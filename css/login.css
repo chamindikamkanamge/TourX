@@ -1,0 +1,154 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+    background: rgb(2, 0, 36);
+    background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(143, 142, 142, 1) 60%, rgba(0, 212, 255, 1) 100%);
+    height: 100vh;
+    overflow: hidden;
+    opacity: 50;
+}
+
+.center {
+    color: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 350px;
+    background-color: white;
+    border: 1px solid white;
+    border-radius: 25px;
+    padding: 20px;
+  
+}
+
+.center h1 {
+    text-align: center;
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid lightgrey;
+    font-family: 'League Gothic', sans-serif;
+}
+
+.center form {
+    box-sizing: border-box;
+    opacity: 50;
+}
+
+.txt-field {
+    position: relative;
+    margin: 30px 0;
+}
+
+.txt-field input {
+    width: 100%;
+    padding: 0 5px;
+    height: 40px;
+    font-size: 16px;
+    border: none;
+    background: none;
+    outline: none;
+}
+
+.txt-field label {
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    color: darkslategray;
+    transform: translateY(-50%);
+    pointer-events: none;
+    transition: .3s;
+}
+
+.txt-field span::before {
+    content: '';
+    position: absolute;
+    top: 40px;
+    left: 0;
+    height: 2px;
+    background: darkslategray;
+    transition: .5s;
+}
+
+.txt-field input:valid ~ label {
+    top: -5px;
+    color: darkslategrey;
+}
+
+.txt-field input:valid ~ span::before {
+    width: 100%;
+}
+
+.pass {
+    margin: -5px 0 20px 5px;
+    color: darkslategray;
+    cursor: pointer;
+    text-align: left;
+}
+
+.pass:hover {
+    text-decoration: underline;
+}
+
+input[type="submit"] {
+    width: 100%;
+    height: 50px;
+    border: 1px solid;
+    margin: 12px auto;
+    border-radius: 15px;
+    background-color: #40b5cc;
+    color: white;
+    font-weight: bold;
+}
+
+input[type="submit"]:hover {
+    cursor: pointer;
+    background-color: lightsalmon;
+}
+
+.sign-up_link {
+    text-align: center;
+    margin: 15px auto;
+    color: darkslategray;
+}
+
+.sign-up_link a {
+    color: darkcyan;
+}
+
+.bg-img {
+    background-image: url("pexels-tomáš-malík-1998438.jpg");
+    opacity: 0.9;
+    min-height: 100vh;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .services {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin:
+    50px 0;
+    }
+    
+    .services article {
+    background-color: #fff;
+    box-shadow: 2px 2px 5px #ccc;
+    margin: 20px;
+    padding: 20px;
+    width: 300px;
+    }
+    
+    .services article h3 {
+    font-size: 24px;
+    margin-top: 0;
+    }
+    
+    .services article p {
+    margin-bottom: 0;
+    }
+    
