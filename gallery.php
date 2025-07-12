@@ -104,6 +104,7 @@
 
     foreach ($imageNames as $img) {
         $url = $basePath . $img;
+        
         echo "
         <div class='frame'>
             <img src='$url' alt='Image'>
