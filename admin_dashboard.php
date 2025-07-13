@@ -56,10 +56,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_action'])) {
     $comment = mysqli_real_escape_string($conn, $_POST['review_comment'] ?? '');
     $reviewId = intval($_POST['review_id'] ?? 0);
     $current_date = date('Y-m-d');
+    $image = '';
+
+    // Handle image upload if provided
+    if (!empty($_FILES['review_image']['name'])) {
+        $uploadDir = 'users/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+        $image = basename($_FILES['review_image']['name']);
+        $target = $uploadDir . $image;
+        move_uploaded_file($_FILES['review_image']['tmp_name'], $target);
+    }
 
     if ($_POST['review_action'] === 'add') {
-        $stmt = $conn->prepare("INSERT INTO reviews (reviewName, comment, rdate) VALUES (?, ?, ?)");
-        $stmt->bind_param('sss', $name, $comment, $current_date);
+        $stmt = $conn->prepare("INSERT INTO reviews (reviewName, comment, rdate, image) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param('ssss', $name, $comment, $current_date, $image);
         $stmt->execute();
         $stmt->close();
     } elseif ($_POST['review_action'] === 'delete') {
@@ -212,7 +222,8 @@ $conn->close();
     }
 
     input[type="text"],
-    input[type="number"] {
+    input[type="number"],
+    input[type="file"] {
       padding: 8px;
       width: 100%;
       box-sizing: border-box;
@@ -229,8 +240,8 @@ $conn->close();
     <a href="#booking">Booking</a>
     <a href="#reviews">Reviews</a>
     <a href="#usercomments">User Comments</a>
-    <a href="admin_register.php" target="_self">Register Admin</a> <!-- Added target="_self" -->
-    <a href="logout.php" target="_self">Logout</a> <!-- Added target="_self" -->
+    <a href="admin_register.php" target="_self">Register Admin</a>
+    <a href="logout.php" target="_self">Logout</a>
   </div>
 </div>
 
@@ -340,10 +351,11 @@ $conn->close();
 <div id="reviews" class="content">
   <h2>Admin Reviews</h2>
   <div class="form-container">
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data"> <!-- Added enctype for file upload -->
       <input type="hidden" name="review_action" value="add">
       <label>Name: <input type="text" name="review_name" required></label>
       <label style="margin-top:10px;">Comment: <textarea name="review_comment" required></textarea></label>
+      <label style="margin-top:10px;">Image: <input type="file" name="review_image" accept="image/*"></label> <!-- Added image upload -->
       <div style="margin-top:15px;">
         <button type="submit" class="btn btn-primary">Add Review</button>
       </div>
@@ -353,7 +365,7 @@ $conn->close();
   <?php if ($reviewsResult->num_rows > 0): ?>
   <table>
     <thead>
-      <tr><th>Name</th><th>Comment</th><th>Date</th><th>Action</th></tr>
+      <tr><th>Name</th><th>Comment</th><th>Date</th><th>Image</th><th>Action</th></tr>
     </thead>
     <tbody>
       <?php while ($row = $reviewsResult->fetch_assoc()) : ?>
@@ -361,6 +373,13 @@ $conn->close();
         <td><?= htmlspecialchars($row['reviewName'] ?? '') ?></td>
         <td><?= htmlspecialchars($row['comment'] ?? '') ?></td>
         <td><?= htmlspecialchars($row['rdate'] ?? '') ?></td>
+        <td>
+          <?php if ($row['image'] && file_exists('users/' . $row['image'])): ?>
+            <img src="users/<?= htmlspecialchars($row['image']) ?>" alt="Review Image" style="max-width: 100px; height: auto;">
+          <?php else: ?>
+            No image
+          <?php endif; ?>
+        </td>
         <td>
           <form method="POST" style="display:inline;" onsubmit="return confirm('Delete review?')">
             <input type="hidden" name="review_action" value="delete">
