@@ -131,6 +131,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     exit();
 } else {
     // If someone tries to access this page directly
-    header("Location: home.php");
+    header("Location: admin_dashboard.php");
     exit();
 }
