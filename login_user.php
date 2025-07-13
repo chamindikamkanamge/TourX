@@ -1,14 +1,31 @@
 <?php
 session_start();
-
 include 'config.php';
 
+// ✅ If user is already logged in, redirect based on usertype
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
+    $stmt = $conn->prepare("SELECT usertype FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->bind_result($usertype);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($usertype === 'admin') {
+        header("Location: admin_dashboard.php");
+    } else {
+        header("Location: home.php");
+    }
+    exit();
+}
+
+// ✅ Handle login form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST["Username"]) && isset($_POST["Password"])) {
         $username = trim($_POST["Username"]);
         $password = trim($_POST["Password"]);
-        
-        // Prepare and bind
+
         $stmt = $conn->prepare("SELECT usertype, username, password FROM users WHERE username = ?");
         $stmt->bind_param("s", $username);
         $stmt->execute();
@@ -18,41 +35,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_result($usertype, $db_username, $db_password);
             $stmt->fetch();
 
-            // Debug: Log fetched values
-            error_log("DB Username: $db_username");
-            error_log("DB Password: $db_password");
+            if ($password === $db_password) {
+                $_SESSION['username'] = $db_username;
 
-            // Verify the password
-            if ($password === $db_password && $usertype=='user') {
-                // Password is correct, set the session and redirect to home.php
-                $_SESSION['username'] = $db_username;
-                header("Location:home.php");
+                if ($usertype === 'admin') {
+                    header("Location: admin_dashboard.php");
+                } else {
+                    header("Location: home.php");
+                }
                 exit();
-            }
-            else if($password === $db_password && $usertype == 'admin'){
-                $_SESSION['username'] = $db_username;
-                header("Location: admin_dashboard.php");
-                exit();
-            }
-            else {
-                // Password is incorrect
-                echo "<script>alert('Invalid username or password');</script>";
+            } else {
+                echo "<script>alert('Incorrect password.');</script>";
             }
         } else {
-            // Username not found
-            echo "<script>alert('Invalid username or password');</script>";
+            echo "<script>alert('Username not found.');</script>";
         }
 
         $stmt->close();
     } else {
-        echo "<script>alert('Please provide both username and password');</script>";
+        echo "<script>alert('Please provide both username and password.');</script>";
     }
 }
 
 $conn->close();
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -61,13 +67,12 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
     <link rel="stylesheet" href="css/login.css">
-    <script type="text/javascript" src="js/login.js"></script>
 </head>
 <body>
     <div class="bg-img" style="background-image: url('uploads/55.jpg');">
         <div class="center">
             <h1>Login</h1>
-            <form id="loginForm" name="loginForm" onsubmit="return validateForm()" method="POST" action="">
+            <form method="POST" onsubmit="return validateForm()">
                 <div class="txt-field">
                     <input type="text" name="Username" id="Username">
                     <span></span>
@@ -81,11 +86,12 @@ $conn->close();
                 <div class="pass"><a href="UpdatePassword.php">Forgot Password?</a></div>
                 <input type="submit" value="Login">
                 <div class="sign-up_link">
-                    Not a Member? <a href="sign.php">Sign Up </a>
+                    Not a Member? <a href="sign.php">Sign Up</a>
                 </div>
             </form>
         </div>
     </div>
+
     <script>
         function validateForm() {
             var username = document.getElementById("Username").value;
@@ -97,7 +103,7 @@ $conn->close();
             }
 
             if (password.length < 4) {
-                alert("Password must be at least 4 characters long");
+                alert("Password must be at least 4 characters long.");
                 return false;
             }
 
