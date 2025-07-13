@@ -2,32 +2,54 @@
 include 'config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Sanitize and escape input data to prevent SQL injection
-    $name = mysqli_real_escape_string($conn, $_POST['name']);
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $number = mysqli_real_escape_string($conn, $_POST['number']);
-    $subject = mysqli_real_escape_string($conn, $_POST['subject']);
-    $comment_date = mysqli_real_escape_string($conn, $_POST['comment_date']);
-    $comment = mysqli_real_escape_string($conn, $_POST['comment']);
+    // Validate input data
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $number = trim($_POST['number'] ?? '');
+    $subject = trim($_POST['subject'] ?? '');
+    $comment_date = trim($_POST['comment_date'] ?? '');
+    $comment = trim($_POST['comment'] ?? '');
 
-    // Corrected SQL query: Match columns with values
-    $sql = "INSERT INTO contact (name, email, number, subject, comment) 
-            VALUES ('$name', '$email', '$number', '$subject', '$comment_date', '$comment')";
-
-    if ($conn->query($sql) === TRUE) {
-        // Success message with redirect
-        echo "<p>Message sent successfully. You will be redirected to the home page shortly.</p>";
-        header("refresh:5;url=home.php");
-        exit(); // Ensure no further code is executed after redirect
-    } else {
-        // Error handling with detailed message
-        echo "Error: " . $sql . "<br>" . $conn->error;
+    // Basic validation
+    if (empty($name) || empty($email) || empty($number) || empty($subject) || empty($comment_date) || empty($comment)) {
+        echo "<p>Error: All fields are required. Please fill out the form completely.</p>";
+        exit();
     }
 
-    // Close the database connection
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "<p>Error: Invalid email format.</p>";
+        exit();
+    }
+
+    // Validate comment_date format (assuming YYYY-MM-DD HH:MM:SS)
+    if (!preg_match("/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/", $comment_date)) {
+        echo "<p>Error: Invalid date format for comment_date.</p>";
+        exit();
+    }
+
+    // Prepare and bind the SQL statement
+    $stmt = $conn->prepare("INSERT INTO contact (name, email, number, subject, comment_date, comment) VALUES (?, ?, ?, ?, ?, ?)");
+    if (!$stmt) {
+        echo "Error preparing statement: " . $conn->error;
+        exit();
+    }
+
+    $stmt->bind_param("ssssss", $name, $email, $number, $subject, $comment_date, $comment);
+
+    // Execute the query
+    if ($stmt->execute()) {
+        echo "<p>Message sent successfully. You will be redirected to the home page in 5 seconds.</p>";
+        header("refresh:5;url=home.php");
+        exit();
+    } else {
+        echo "<p>Error: " . $stmt->error . "</p>";
+    }
+
+    // Close the statement and connection
+    $stmt->close();
     $conn->close();
 } else {
-    // Handle non-POST requests
     echo "<p>Invalid request method. Please use the contact form.</p>";
 }
 ?>
