@@ -93,8 +93,23 @@ $conn->close();
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
+      background: url('/uploads/banner-3.jpg') center/cover no-repeat fixed;
+      position: relative;
     }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+      z-index: -1;
+    }
+
     .navbar {
       display: flex;
       justify-content: space-between;
@@ -102,47 +117,66 @@ $conn->close();
       background: #333;
       padding: 10px 20px;
       color: #fff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
     }
+
     .nav-links {
       display: flex;
       gap: 20px;
     }
+
     .nav-links a {
       color: #fff;
       text-decoration: none;
       padding: 8px 12px;
       border-radius: 4px;
     }
+
     .nav-links a:hover,
     .nav-links a.active {
       background: #575757;
     }
+
     .content {
       display: none;
       padding: 20px;
+      background: rgba(255, 255, 255, 0.9); /* Semi-transparent white background for content */
+      border-radius: 5px;
+      margin-top: 60px; /* Offset for fixed navbar */
     }
+
     .content#home {
       display: block;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
     }
+
     table, th, td {
       border: 1px solid #ddd;
     }
+
     th, td {
       padding: 8px;
       text-align: left;
     }
+
     th {
       background-color: #f2f2f2;
     }
+
     img {
       max-width: 100px;
       height: auto;
     }
+
     .form-container {
       margin: 15px 0;
       padding: 15px;
@@ -150,6 +184,7 @@ $conn->close();
       background: #f9f9f9;
       border-radius: 5px;
     }
+
     .btn {
       padding: 6px 12px;
       margin: 2px;
@@ -158,30 +193,29 @@ $conn->close();
       cursor: pointer;
       font-size: 14px;
     }
+
     .btn-primary {
       background-color: #007bff;
       color: white;
     }
+
     .btn-danger {
       background-color: #dc3545;
       color: white;
     }
+
     textarea {
       width: 100%;
       min-height: 100px;
       padding: 8px;
       box-sizing: border-box;
     }
+
     input[type="text"],
     input[type="number"] {
       padding: 8px;
       width: 100%;
       box-sizing: border-box;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -195,8 +229,8 @@ $conn->close();
     <a href="#booking">Booking</a>
     <a href="#reviews">Reviews</a>
     <a href="#usercomments">User Comments</a>
-    <a href="admin_register.php">Register Admin</a>
-    <a href="logout.php">Logout</a>
+    <a href="admin_register.php" target="_self">Register Admin</a> <!-- Added target="_self" -->
+    <a href="logout.php" target="_self">Logout</a> <!-- Added target="_self" -->
   </div>
 </div>
 
@@ -423,8 +457,14 @@ $conn->close();
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-links a').forEach(link => {
       link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        // Check if the link is an external URL (not starting with #)
+        if (!href.startsWith('#')) {
+          // Allow navigation for external links
+          return; // Let the browser handle the navigation
+        }
         e.preventDefault();
-        const id = this.getAttribute('href').substring(1);
+        const id = href.substring(1);
         showSection(id);
       });
     });

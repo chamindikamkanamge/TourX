@@ -1,55 +1,78 @@
+<?php include 'config.php'; ?>
 <?php
-include 'config.php';
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Validate input data
-    $name = trim($_POST['name'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $number = trim($_POST['number'] ?? '');
-    $subject = trim($_POST['subject'] ?? '');
-    $comment_date = trim($_POST['comment_date'] ?? '');
-    $comment = trim($_POST['comment'] ?? '');
+    $name = mysqli_real_escape_string($conn, $_POST["name"]);
+    $email = mysqli_real_escape_string($conn, $_POST["email"]);
+    $number = mysqli_real_escape_string($conn, $_POST["number"]);
+    $subject = mysqli_real_escape_string($conn, $_POST["subject"]);
+    $date = mysqli_real_escape_string($conn, $_POST["comment_date"]);
+    $comment = mysqli_real_escape_string($conn, $_POST["comment"]);
 
-    // Basic validation
-    if (empty($name) || empty($email) || empty($number) || empty($subject) || empty($comment_date) || empty($comment)) {
-        echo "<p>Error: All fields are required. Please fill out the form completely.</p>";
-        exit();
-    }
+    $sql = "INSERT INTO contact (name, email, number, subject, comment_date, comment) 
+            VALUES ('$name', '$email', '$number', '$subject', '$date', '$comment')";
 
-    // Validate email format
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo "<p>Error: Invalid email format.</p>";
-        exit();
-    }
-
-    // Validate comment_date format (assuming YYYY-MM-DD HH:MM:SS)
-    if (!preg_match("/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/", $comment_date)) {
-        echo "<p>Error: Invalid date format for comment_date.</p>";
-        exit();
-    }
-
-    // Prepare and bind the SQL statement
-    $stmt = $conn->prepare("INSERT INTO contact (name, email, number, subject, comment_date, comment) VALUES (?, ?, ?, ?, ?, ?)");
-    if (!$stmt) {
-        echo "Error preparing statement: " . $conn->error;
-        exit();
-    }
-
-    $stmt->bind_param("ssssss", $name, $email, $number, $subject, $comment_date, $comment);
-
-    // Execute the query
-    if ($stmt->execute()) {
-        echo "<p>Message sent successfully. You will be redirected to the home page in 5 seconds.</p>";
-        header("refresh:5;url=home.php");
-        exit();
+    if ($conn->query($sql)) {
+        $msg = "Message sent successfully!";
     } else {
-        echo "<p>Error: " . $stmt->error . "</p>";
+        $msg = "Error: " . $conn->error;
     }
-
-    // Close the statement and connection
-    $stmt->close();
-    $conn->close();
-} else {
-    echo "<p>Invalid request method. Please use the contact form.</p>";
 }
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact | TourX</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <nav class="navbar">
+    <a href="home.php">home</a>
+    <a href="packages.php">packages</a>
+    <a href="about_us.php">about</a>
+    <a href="images.php">gallery</a> <!-- ✅ Fixed -->
+    <a href="reviews.php">review</a>
+    <a href="contact.php">contact</a>
+</nav>
+
+        <div class="icons">
+            <a href="search.php"><i class="fas fa-search" id="search-icon"></i></a>
+            <a href="login_user.php"><i class="fas fa-user" id="login-icon"></i></a>
+        </div>
+
+        <form action="" class="search-bar-container">
+            <input type="search" id="search-bar" placeholder="search here...">
+            <label for="search-bar" class="fas fa-search"></label>
+        </form>
+</head>
+<body>
+
+<?php include 'header.php'; ?>
+
+<section class="contact" id="contact">
+    <h1 class="heading"><span>c</span><span>o</span><span>n</span><span>t</span><span>a</span><span>c</span><span>t</span></h1>
+    <div class="row">
+        <div class="image">
+            <img src="img/contact-img.svg" alt="">
+        </div>
+        <form method="POST" action="">
+            <div class="inputBox">
+                <input type="text" name="name" placeholder="name" required>
+                <input type="email" name="email" placeholder="email" required>
+            </div>
+            <div class="inputBox">
+                <input type="number" name="number" placeholder="number" required>
+                <input type="text" name="subject" placeholder="subject" required>
+            </div>
+            <div class="inputBox">
+                <input type="date" name="comment_date">
+            </div>
+            <textarea name="comment" placeholder="comment" cols="10" rows="3" required></textarea>
+            <input type="submit" value="send message" class="btn">
+            <?php if (!empty($msg)) echo "<p>$msg</p>"; ?>
+        </form>
+    </div>
+</section>
+
+<?php include 'footer.php'; ?>
+</body>
+</html>
