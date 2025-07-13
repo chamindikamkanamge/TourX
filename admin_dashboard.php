@@ -2,6 +2,10 @@
 session_start();
 include 'config.php';
 
+// Error reporting configuration (turn off in production)
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Set to 1 for development, 0 for production
+
 if (!isset($_SESSION['username'])) {
     header("Location: admin_login.php");
     exit();
@@ -39,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['package_action'])) {
         $stmt->execute();
         $stmt->close();
     } elseif ($action === 'delete') {
-        // Optionally delete image file here if you want
         $stmt = $conn->prepare("DELETE FROM packages WHERE id=?");
         $stmt->bind_param('i', $pid);
         $stmt->execute();
@@ -55,9 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_action'])) {
     $current_date = date('Y-m-d');
 
     if ($_POST['review_action'] === 'add') {
-        $conn->query("INSERT INTO reviews (reviewName, comment, rdate) VALUES ('$name', '$comment', '$current_date')");
+        $stmt = $conn->prepare("INSERT INTO reviews (reviewName, comment, rdate) VALUES (?, ?, ?)");
+        $stmt->bind_param('sss', $name, $comment, $current_date);
+        $stmt->execute();
+        $stmt->close();
     } elseif ($_POST['review_action'] === 'delete') {
-        $conn->query("DELETE FROM reviews WHERE id = $reviewId");
+        $stmt = $conn->prepare("DELETE FROM reviews WHERE id = ?");
+        $stmt->bind_param('i', $reviewId);
+        $stmt->execute();
+        $stmt->close();
     }
 }
 
@@ -127,6 +136,9 @@ $conn->close();
       padding: 8px;
       text-align: left;
     }
+    th {
+      background-color: #f2f2f2;
+    }
     img {
       max-width: 100px;
       height: auto;
@@ -136,6 +148,7 @@ $conn->close();
       padding: 15px;
       border: 1px solid #ccc;
       background: #f9f9f9;
+      border-radius: 5px;
     }
     .btn {
       padding: 6px 12px;
@@ -143,6 +156,7 @@ $conn->close();
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      font-size: 14px;
     }
     .btn-primary {
       background-color: #007bff;
@@ -151,6 +165,23 @@ $conn->close();
     .btn-danger {
       background-color: #dc3545;
       color: white;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    input[type="text"],
+    input[type="number"] {
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -171,9 +202,9 @@ $conn->close();
 
 <div id="home" class="content">
   <h2>Dashboard Overview</h2>
-  <p>Total Packages: <strong><?= $totalPackages ?></strong></p>
-  <p>Total Bookings: <strong><?= $totalBookings ?></strong></p>
-  <p>Total Reviews: <strong><?= $totalReviews ?></strong></p>
+  <p>Total Packages: <strong><?= htmlspecialchars($totalPackages) ?></strong></p>
+  <p>Total Bookings: <strong><?= htmlspecialchars($totalBookings) ?></strong></p>
+  <p>Total Reviews: <strong><?= htmlspecialchars($totalReviews) ?></strong></p>
 </div>
 
 <!-- Packages Section -->
@@ -187,21 +218,23 @@ $conn->close();
       <input type="hidden" name="package_action" value="add" id="package_action">
       <input type="hidden" name="package_id" id="package_id" value="">
       <input type="hidden" name="existing_image" id="existing_image" value="">
-      <label>Name:<br>
+      <label>Name:
         <input type="text" name="package_name" id="package_name" required>
-      </label><br><br>
-      <label>Price:<br>
+      </label>
+      <label>Price:
         <input type="number" step="0.01" name="package_price" id="package_price" required>
-      </label><br><br>
-      <label>Description:<br>
+      </label>
+      <label>Description:
         <textarea name="package_description" id="package_description" required></textarea>
-      </label><br><br>
-      <label>Image:<br>
+      </label>
+      <label>Image:
         <input type="file" name="package_image" id="package_image" onchange="previewImage(this)">
-      </label><br>
-      <img id="imagePreview" style="display:none;max-width:200px;" alt="Image Preview"><br>
-      <button type="submit" class="btn btn-primary">Save</button>
-      <button type="button" class="btn" onclick="hideForm()">Cancel</button>
+      </label>
+      <img id="imagePreview" style="display:none;max-width:200px;margin-top:10px;" alt="Image Preview">
+      <div style="margin-top:15px;">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn" onclick="hideForm()">Cancel</button>
+      </div>
     </form>
   </div>
 
@@ -215,7 +248,7 @@ $conn->close();
       <?php while ($row = $packagesResult->fetch_assoc()) : ?>
       <tr>
         <td><?= htmlspecialchars($row['name']) ?></td>
-        <td><?= htmlspecialchars($row['price']) ?></td>
+        <td>$<?= number_format(htmlspecialchars($row['price']), 2) ?></td>
         <td><?= htmlspecialchars($row['description']) ?></td>
         <td>
           <?php if ($row['image'] && file_exists('uploads/' . $row['image'])): ?>
@@ -247,6 +280,7 @@ $conn->close();
 <!-- Booking Section -->
 <div id="booking" class="content">
   <h2>Bookings</h2>
+  <?php if ($booksResult->num_rows > 0): ?>
   <table>
     <thead>
       <tr><th>Username</th><th>Where To</th><th>How Many</th><th>Arrival Date</th><th>Leaving Date</th></tr>
@@ -254,26 +288,35 @@ $conn->close();
     <tbody>
       <?php while ($row = $booksResult->fetch_assoc()) : ?>
       <tr>
-        <td><?= htmlspecialchars($row['username']) ?></td>
-        <td><?= htmlspecialchars($row['where_to']) ?></td>
-        <td><?= htmlspecialchars($row['how_many']) ?></td>
-        <td><?= htmlspecialchars($row['arrivals_date']) ?></td>
-        <td><?= htmlspecialchars($row['leaving_date']) ?></td>
+        <td><?= htmlspecialchars($row['username'] ?? '') ?></td>
+        <td><?= htmlspecialchars($row['where_to'] ?? '') ?></td>
+        <td><?= htmlspecialchars($row['how_many'] ?? '') ?></td>
+        <td><?= htmlspecialchars($row['arrivals_date'] ?? '') ?></td>
+        <td><?= htmlspecialchars($row['leaving_date'] ?? '') ?></td>
       </tr>
       <?php endwhile; ?>
     </tbody>
   </table>
+  <?php else: ?>
+  <p>No bookings found.</p>
+  <?php endif; ?>
 </div>
 
 <!-- Reviews Section -->
 <div id="reviews" class="content">
   <h2>Admin Reviews</h2>
-  <form method="POST" style="margin-bottom: 20px;">
-    <input type="hidden" name="review_action" value="add">
-    <label>Name: <input type="text" name="review_name" required></label>
-    <label>Comment: <input type="text" name="review_comment" required></label>
-    <button type="submit">Add Review</button>
-  </form>
+  <div class="form-container">
+    <form method="POST">
+      <input type="hidden" name="review_action" value="add">
+      <label>Name: <input type="text" name="review_name" required></label>
+      <label style="margin-top:10px;">Comment: <textarea name="review_comment" required></textarea></label>
+      <div style="margin-top:15px;">
+        <button type="submit" class="btn btn-primary">Add Review</button>
+      </div>
+    </form>
+  </div>
+  
+  <?php if ($reviewsResult->num_rows > 0): ?>
   <table>
     <thead>
       <tr><th>Name</th><th>Comment</th><th>Date</th><th>Action</th></tr>
@@ -281,9 +324,9 @@ $conn->close();
     <tbody>
       <?php while ($row = $reviewsResult->fetch_assoc()) : ?>
       <tr>
-        <td><?= htmlspecialchars($row['reviewName']) ?></td>
-        <td><?= htmlspecialchars($row['comment']) ?></td>
-        <td><?= htmlspecialchars($row['rdate']) ?></td>
+        <td><?= htmlspecialchars($row['reviewName'] ?? '') ?></td>
+        <td><?= htmlspecialchars($row['comment'] ?? '') ?></td>
+        <td><?= htmlspecialchars($row['rdate'] ?? '') ?></td>
         <td>
           <form method="POST" style="display:inline;" onsubmit="return confirm('Delete review?')">
             <input type="hidden" name="review_action" value="delete">
@@ -295,24 +338,31 @@ $conn->close();
       <?php endwhile; ?>
     </tbody>
   </table>
+  <?php else: ?>
+  <p>No reviews found.</p>
+  <?php endif; ?>
 </div>
 
 <!-- User Comments Section -->
 <div id="usercomments" class="content">
   <h2>User Comments</h2>
+  <?php if ($contactInfoResult->num_rows > 0): ?>
   <table>
-    <thead><tr><th>Name</th><th>Comment</th><th>Date</th><th>Rating</th></tr></thead>
+    <thead><tr><th>Name</th><th>Subject</th><th>Message</th><th>Rating</th></tr></thead>
     <tbody>
       <?php while ($row = $contactInfoResult->fetch_assoc()) : ?>
       <tr>
-        <td><?= htmlspecialchars($row['name']) ?></td>
-        <td><?= htmlspecialchars($row['comment']) ?></td>
-        <td><?= htmlspecialchars($row['comment_dtae']) ?></td>
-        <td><?= htmlspecialchars($row['rating']) ?>/5</td>
+        <td><?= htmlspecialchars($row['name'] ?? '') ?></td>
+        <td><?= htmlspecialchars($row['subject'] ?? '') ?></td>
+        <td><?= htmlspecialchars($row['message'] ?? 'No message') ?></td>
+        <td><?= htmlspecialchars($row['rating'] ?? '0') ?>/5</td>
       </tr>
       <?php endwhile; ?>
     </tbody>
   </table>
+  <?php else: ?>
+  <p>No user comments found.</p>
+  <?php endif; ?>
 </div>
 
 <script>
