@@ -90,6 +90,7 @@ $conn->close();
                 <div class="sign-up_link">
                     Not a Member? <a href="sign.php">Sign Up</a>
                 </div>
+                
             </form>
         </div>
     </div>
