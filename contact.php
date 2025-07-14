@@ -5,10 +5,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = mysqli_real_escape_string($conn, $_POST["email"]);
     $number = mysqli_real_escape_string($conn, $_POST["number"]);
     $subject = mysqli_real_escape_string($conn, $_POST["subject"]);
-    $date = mysqli_real_escape_string($conn, $_POST["comment_date"]);
+    $date = mysqli_real_escape_string($conn, $_POST["date"]);
     $comment = mysqli_real_escape_string($conn, $_POST["comment"]);
 
-    $sql = "INSERT INTO contact (name, email, number, subject, comment_date, comment) 
+    $sql = "INSERT INTO contact (name, email, number, subject, date, comment) 
             VALUES ('$name', '$email', '$number', '$subject', '$date', '$comment')";
 
     if ($conn->query($sql)) {
@@ -64,7 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="text" name="subject" placeholder="subject" required>
             </div>
             <div class="inputBox">
-                <input type="date" name="comment_date">
+                <input type="date" name="date">
             </div>
             <textarea name="comment" placeholder="comment" cols="10" rows="3" required></textarea>
             <input type="submit" value="send message" class="btn">
