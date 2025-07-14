@@ -110,5 +110,6 @@ $conn->close();
             return true;
         }
     </script>
+    
 </body>
 </html>
